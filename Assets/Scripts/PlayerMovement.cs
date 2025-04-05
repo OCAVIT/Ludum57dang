@@ -14,6 +14,8 @@ public class FirstPersonController : MonoBehaviour
     private float verticalRotation = 0f; // Текущий угол вращения камеры по вертикали
     private bool isGrounded; // Проверка, находится ли игрок на земле
 
+    public bool canLook = true; // Флаг, можно ли управлять камерой
+
     private void Start()
     {
         // Получаем компонент CharacterController
@@ -34,8 +36,11 @@ public class FirstPersonController : MonoBehaviour
             velocity.y = -2f; // Сбрасываем скорость падения, чтобы игрок не "проваливался"
         }
 
-        // Управление мышью
-        HandleMouseLook();
+        // Управление мышью (только если canLook == true)
+        if (canLook)
+        {
+            HandleMouseLook();
+        }
 
         // Управление движением
         HandleMovement();
