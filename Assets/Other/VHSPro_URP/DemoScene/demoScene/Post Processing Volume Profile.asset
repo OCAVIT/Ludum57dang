@@ -287,22 +287,22 @@ MonoBehaviour:
     m_Value: 0
   colorMode:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 1
   colorSyncedOn:
     m_OverrideState: 1
     m_Value: 1
   bitsR:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 25
   bitsG:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 0
   bitsB:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 118
   bitsSynced:
     m_OverrideState: 1
-    m_Value: 16
+    m_Value: 0
   bitsGray:
     m_OverrideState: 1
     m_Value: 1
@@ -323,10 +323,10 @@ MonoBehaviour:
     m_Value: 0
   paletteId:
     m_OverrideState: 1
-    m_Value: 16
+    m_Value: 11
   paletteDelta:
     m_OverrideState: 1
-    m_Value: 5
+    m_Value: 0
   paletteTex:
     m_OverrideState: 1
     m_Value: {fileID: 0}
@@ -375,7 +375,7 @@ MonoBehaviour:
     m_Value: 0.88
   lineNoiseSpeed:
     m_OverrideState: 1
-    m_Value: 1.34
+    m_Value: 0.84
   tapeNoiseOn:
     m_OverrideState: 1
     m_Value: 0
@@ -384,7 +384,7 @@ MonoBehaviour:
     m_Value: 1.5
   tapeNoiseAmount:
     m_OverrideState: 1
-    m_Value: 0.081
+    m_Value: 0
   tapeNoiseSpeed:
     m_OverrideState: 1
     m_Value: 1.5
@@ -393,13 +393,13 @@ MonoBehaviour:
     m_Value: 0
   scanLineWidth:
     m_OverrideState: 1
-    m_Value: 10
+    m_Value: 0
   linesFloatOn:
     m_OverrideState: 1
     m_Value: 0
   linesFloatSpeed:
     m_OverrideState: 1
-    m_Value: -0
+    m_Value: -3
   stretchOn:
     m_OverrideState: 1
     m_Value: 0
@@ -408,22 +408,22 @@ MonoBehaviour:
     m_Value: 1
   jitterHAmount:
     m_OverrideState: 1
-    m_Value: 0.48
+    m_Value: 1.29
   jitterVOn:
     m_OverrideState: 1
     m_Value: 0
   jitterVAmount:
     m_OverrideState: 1
-    m_Value: 0.35
+    m_Value: 15
   jitterVSpeed:
     m_OverrideState: 1
-    m_Value: 0.36
+    m_Value: 5
   twitchHOn:
     m_OverrideState: 1
     m_Value: 0
   twitchHFreq:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0.27
   twitchVOn:
     m_OverrideState: 1
     m_Value: 0
@@ -435,10 +435,10 @@ MonoBehaviour:
     m_Value: 1
   signalAdjustY:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: -0.016
   signalAdjustI:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: -0.003
   signalAdjustQ:
     m_OverrideState: 1
     m_Value: 0

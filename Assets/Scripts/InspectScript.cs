@@ -31,13 +31,23 @@ public class PaperInteraction : MonoBehaviour
     private Vector3 targetPosition;
     private Quaternion targetRotation;
 
+    private bool cursorInitiallyDisabled = false; // Новый флаг для отслеживания состояния курсора
+
     private void Start()
     {
         inspectText.SetActive(false);
         opisanie.SetActive(false);
+
         if (exitObject != null)
         {
             exitObject.SetActive(false);
+        }
+
+        // Отключаем курсор в начале сцены
+        if (cursor != null)
+        {
+            cursor.SetActive(false);
+            cursorInitiallyDisabled = true; // Устанавливаем флаг, что курсор был отключен
         }
     }
 
@@ -110,7 +120,13 @@ public class PaperInteraction : MonoBehaviour
                         }
 
                         inspectText.SetActive(true);
-                        cursor.SetActive(false);
+
+                        // Отключаем курсор, если объект найден
+                        if (cursor != null)
+                        {
+                            cursor.SetActive(false);
+                        }
+
                         currentObject = obj.objectTransform;
 
                         originalObjectPosition = currentObject.position;
@@ -123,7 +139,13 @@ public class PaperInteraction : MonoBehaviour
         }
 
         inspectText.SetActive(false);
-        cursor.SetActive(true);
+
+        // Включаем курсор только если он не был изначально отключен
+        if (cursor != null && !cursorInitiallyDisabled)
+        {
+            cursor.SetActive(true);
+        }
+
         currentObject = null;
     }
 
@@ -132,7 +154,10 @@ public class PaperInteraction : MonoBehaviour
         isInspecting = true;
 
         inspectText.SetActive(false);
-        cursor.SetActive(false);
+        if (cursor != null)
+        {
+            cursor.SetActive(false);
+        }
 
         opisanie.SetActive(true);
 
@@ -183,7 +208,11 @@ public class PaperInteraction : MonoBehaviour
             exitObject.SetActive(false);
         }
 
-        cursor.SetActive(true);
+        // Включаем курсор только если он не был изначально отключен
+        if (cursor != null && !cursorInitiallyDisabled)
+        {
+            cursor.SetActive(true);
+        }
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;

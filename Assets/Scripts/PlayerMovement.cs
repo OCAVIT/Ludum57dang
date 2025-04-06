@@ -6,7 +6,6 @@ public class FirstPersonController : MonoBehaviour
     public float mouseSensitivity = 100f; // Чувствительность мыши
     public Transform playerCamera; // Ссылка на камеру (должна быть дочерним объектом игрока)
     public float gravity = -9.81f; // Гравитация
-    public float jumpHeight = 1.5f; // Высота прыжка
     public float maxLookAngle = 90f; // Максимальный угол обзора вверх/вниз
 
     private CharacterController controller; // Ссылка на CharacterController
@@ -77,12 +76,6 @@ public class FirstPersonController : MonoBehaviour
 
         // Перемещаем персонажа
         controller.Move(movement * moveSpeed * Time.deltaTime);
-
-        // Прыжок
-        if (Input.GetButtonDown("Jump") && isGrounded)
-        {
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity); // Формула для прыжка
-        }
     }
 
     private void ApplyGravity()
