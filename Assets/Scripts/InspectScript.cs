@@ -6,11 +6,10 @@ public class PaperInteraction : MonoBehaviour
     [Header("References")]
     public Camera mainCamera;
     public GameObject cursor;
-    public GameObject inspectText;
     public GameObject opisanie;
     public TMP_Text opisanieName;
     public TMP_Text opisanieDescr;
-    public FirstPersonController cameraController;
+    public LimpingFirstPersonController cameraController;
     public CharacterController playerController;
     public GameObject exitObject;
 
@@ -22,6 +21,12 @@ public class PaperInteraction : MonoBehaviour
 
     [Header("Inspectable Objects")]
     public InspectableObject[] inspectableObjects;
+
+    [Header("Audio Settings")]
+    public AudioClip pickSound; // Звук при входе в инспект
+    public AudioClip dropSound; // Звук при выходе из инспекта
+    private AudioSource audioSource; // Источник звука
+    public float audioVolume = 0.5f; // Громкость звука (уменьшена в 2 раза)
 
     private bool isInspecting = false;
     private bool isReturning = false;
@@ -35,7 +40,6 @@ public class PaperInteraction : MonoBehaviour
 
     private void Start()
     {
-        inspectText.SetActive(false);
         opisanie.SetActive(false);
 
         if (exitObject != null)
@@ -49,6 +53,10 @@ public class PaperInteraction : MonoBehaviour
             cursor.SetActive(false);
             cursorInitiallyDisabled = true; // Устанавливаем флаг, что курсор был отключен
         }
+
+        // Инициализируем AudioSource
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.volume = audioVolume; // Устанавливаем громкость для всех звуков
     }
 
     private void Update()
@@ -67,6 +75,15 @@ public class PaperInteraction : MonoBehaviour
             else if (currentObject != null)
             {
                 EnterInspectMode();
+            }
+
+            // Деактивируем Textpapper для текущего объекта при нажатии на "E"
+            foreach (var obj in inspectableObjects)
+            {
+                if (currentObject == obj.objectTransform && obj.textPaper != null)
+                {
+                    obj.textPaper.SetActive(false);
+                }
             }
         }
 
@@ -119,8 +136,6 @@ public class PaperInteraction : MonoBehaviour
                             return;
                         }
 
-                        inspectText.SetActive(true);
-
                         // Отключаем курсор, если объект найден
                         if (cursor != null)
                         {
@@ -138,8 +153,6 @@ public class PaperInteraction : MonoBehaviour
             }
         }
 
-        inspectText.SetActive(false);
-
         // Включаем курсор только если он не был изначально отключен
         if (cursor != null && !cursorInitiallyDisabled)
         {
@@ -153,7 +166,6 @@ public class PaperInteraction : MonoBehaviour
     {
         isInspecting = true;
 
-        inspectText.SetActive(false);
         if (cursor != null)
         {
             cursor.SetActive(false);
@@ -190,10 +202,15 @@ public class PaperInteraction : MonoBehaviour
                          mainCamera.transform.up * inspectionOffset.y +
                          mainCamera.transform.right * inspectionOffset.x;
 
-        targetRotation = Quaternion.LookRotation(mainCamera.transform.up, -mainCamera.transform.forward);
+        // Переворачиваем объект на 180 градусов по оси X (или другой оси, если нужно)
+        targetRotation = Quaternion.LookRotation(mainCamera.transform.up, -mainCamera.transform.forward) *
+                         Quaternion.Euler(0f, 180f, 0f); // Поворот на 180 градусов по оси X
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        // Воспроизводим звук при входе в инспект
+        PlaySound(pickSound);
     }
 
     private void ExitInspectMode()
@@ -216,6 +233,18 @@ public class PaperInteraction : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        // Воспроизводим звук при выходе из инспекта
+        PlaySound(dropSound);
+    }
+
+    private void PlaySound(AudioClip clip)
+    {
+        if (audioSource != null && clip != null)
+        {
+            // Воспроизводим звук с уменьшенной громкостью
+            audioSource.PlayOneShot(clip, audioVolume);
+        }
     }
 }
 
@@ -225,4 +254,5 @@ public class InspectableObject
     public Transform objectTransform;
     public string objectName;
     public string objectDescription;
+    public GameObject textPaper; // Добавлено для хранения Textpapper
 }

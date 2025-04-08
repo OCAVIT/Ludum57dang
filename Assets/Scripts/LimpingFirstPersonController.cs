@@ -1,5 +1,9 @@
 using UnityEngine;
+using System.Collections;
 using TMPro; // Для работы с TMP_Text
+using UnityEngine.UI; // Для работы с CanvasGroup
+using UnityEngine.Rendering; // Для работы с Global Volume
+using UnityEngine.Rendering.Universal; // Для работы с VHSPro
 
 public class LimpingFirstPersonController : MonoBehaviour
 {
@@ -26,12 +30,27 @@ public class LimpingFirstPersonController : MonoBehaviour
     // Новые переменные для взаимодействия с объектом
     public GameObject FONARIK; // Объект фонарика
     public GameObject FONARIKLOB; // Объект, содержащий Light
-    public GameObject TextText; // Объект с текстом
     public GameObject cursor; // Объект курсора
-    public TMP_Text textComponent; // TMP_Text для изменения текста
     public float interactionDistance = 3f; // Максимальная дистанция взаимодействия
+    public GameObject blood;
+    public GameObject BINT; // Объект BINT
+    public CanvasGroup BlackPanel; // Панель для затемнения
+    public AudioClip Regen; // Аудиоклип для восстановления
 
+    public AudioSource managerAudioSource; // Аудиоисточник в объекте Manager
+    public Volume globalVolume; // Ссылка на Global Volume
+
+    private bool isLookingAtBint = false; // Флаг, смотрит ли игрок на BINT
     private bool isLookingAtFonarik = false; // Флаг, смотрит ли игрок на фонарик
+
+    // Аудио
+    public AudioSource audioSource; // Источник звука
+    public AudioClip[] stepSounds; // Массив звуков шагов
+    public AudioClip pickUpSound; // Звук поднятия фонарика
+    private bool isWalking = false; // Флаг, идет ли игрок
+    private float stepTimer = 0f; // Таймер для шагов
+    public float stepInterval = 0.5f; // Интервал между шагами
+    public GameObject AUDIOPIZDA;
 
     private void Start()
     {
@@ -45,8 +64,7 @@ public class LimpingFirstPersonController : MonoBehaviour
         // Сохраняем исходное положение камеры
         originalCameraPosition = playerCamera.localPosition;
 
-        // Убедимся, что текст и курсор скрыты в начале
-        TextText.SetActive(false);
+        // Убедимся, что курсор скрыт в начале
         cursor.SetActive(true);
     }
 
@@ -75,7 +93,7 @@ public class LimpingFirstPersonController : MonoBehaviour
         // Анимация хромоты
         AnimateLimping();
 
-        // Проверка взаимодействия с объектом
+        // Проверка взаимодействия с объектами
         CheckInteraction();
     }
 
@@ -112,10 +130,20 @@ public class LimpingFirstPersonController : MonoBehaviour
         if (movement.magnitude > 0)
         {
             limpTimer += Time.deltaTime * limpFrequency;
+
+            // Воспроизведение звуков шагов
+            isWalking = true;
+            stepTimer += Time.deltaTime;
+            if (stepTimer >= stepInterval)
+            {
+                PlayStepSound();
+                stepTimer = 0f;
+            }
         }
         else
         {
             limpTimer = 0f; // Сбрасываем таймер, если игрок не движется
+            isWalking = false;
         }
     }
 
@@ -146,44 +174,132 @@ public class LimpingFirstPersonController : MonoBehaviour
         }
     }
 
+    private void PickUpFonarik()
+    {
+        // Отключаем объект фонарика (тот, который лежит на земле)
+        FONARIK.SetActive(false);
+
+        // Включаем компонент Light на объекте FONARIKLOB
+        Light lightComponent = FONARIKLOB.GetComponent<Light>();
+        if (lightComponent != null)
+        {
+            lightComponent.enabled = true;
+            Debug.Log("Компонент Light на FONARIKLOB включен");
+        }
+        else
+        {
+            Debug.LogError("На объекте FONARIKLOB отсутствует компонент Light!");
+        }
+
+        // Воспроизводим звук поднятия
+        if (pickUpSound != null)
+        {
+            audioSource.PlayOneShot(pickUpSound);
+        }
+    }
+
     private void CheckInteraction()
     {
         // Создаем луч из центра камеры
         Ray ray = new Ray(playerCamera.position, playerCamera.forward);
         RaycastHit hit;
 
-        // Проверяем, попадает ли луч в объект FONARIK
+        // Проверяем, попадает ли луч в объект
         if (Physics.Raycast(ray, out hit, interactionDistance))
         {
-            if (hit.collider.gameObject == FONARIK)
+            if (hit.collider.gameObject == BINT && FONARIKLOB.activeSelf)
             {
-                // Если игрок смотрит на фонарик
-                isLookingAtFonarik = true;
-                TextText.SetActive(true);
-                cursor.SetActive(false);
-                textComponent.text = "Press \"E\" To Pick Up";
+                // Логика для BINT
+                isLookingAtBint = true;
 
-                // Если игрок нажимает "E"
                 if (Input.GetKeyDown(KeyCode.E))
                 {
-                    FONARIK.SetActive(false);
-                    FONARIKLOB.GetComponent<Light>().enabled = true;
-                    TextText.SetActive(false);
-                    cursor.SetActive(true);
+                    StartCoroutine(UseBint());
+                }
+            }
+            else if (hit.collider.gameObject == FONARIK)
+            {
+                // Логика для FONARIK
+                isLookingAtFonarik = true;
+
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    PickUpFonarik();
                 }
             }
             else
             {
+                // Если игрок не смотрит ни на BINT, ни на FONARIK
+                isLookingAtBint = false;
                 isLookingAtFonarik = false;
-                TextText.SetActive(false);
-                cursor.SetActive(true);
             }
         }
         else
         {
+            // Если луч никуда не попал
+            isLookingAtBint = false;
             isLookingAtFonarik = false;
-            TextText.SetActive(false);
-            cursor.SetActive(true);
+        }
+    }
+
+    private IEnumerator UseBint()
+    {
+        // Отключаем BINT
+        BINT.SetActive(false);
+
+        // Воспроизводим звук восстановления
+        audioSource.PlayOneShot(Regen);
+
+        // FadeIn черной панели
+        yield return StartCoroutine(FadeCanvasGroup(BlackPanel, 0f, 1f, 1f));
+
+        // Изменяем параметры во время FadeOut
+        moveSpeed = 4f; // Устанавливаем скорость игрока
+        stepInterval = 1f; // Устанавливаем интервал шагов
+        managerAudioSource.enabled = false; // Отключаем аудиоисточник Manager
+        blood.SetActive(false); // Отключаем объект blood
+
+        // Отключаем флаг feedback в Global Volume
+        if (globalVolume != null && globalVolume.profile != null)
+        {
+            if (globalVolume.profile.TryGet<VHSPro>(out VHSPro vhsPro))
+            {
+                if (vhsPro.feedbackOn != null)
+                {
+                    vhsPro.feedbackOn.value = false;
+                }
+            }
+        }
+
+        // FadeOut черной панели
+        yield return StartCoroutine(FadeCanvasGroup(BlackPanel, 1f, 0f, 1f));
+    }
+
+    private IEnumerator FadeCanvasGroup(CanvasGroup canvasGroup, float startAlpha, float endAlpha, float duration)
+    {
+        // Отключаем скрипт "Panel Fader" в начале FadeOut
+        if (startAlpha > endAlpha && canvasGroup.gameObject.TryGetComponent(out MonoBehaviour panelFader))
+        {
+            AUDIOPIZDA.SetActive(false);
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            canvasGroup.alpha = Mathf.Lerp(startAlpha, endAlpha, elapsed / duration);
+            yield return null;
+        }
+        canvasGroup.alpha = endAlpha;
+    }
+
+    private void PlayStepSound()
+    {
+        if (stepSounds.Length > 0 && isWalking)
+        {
+            // Выбираем случайный звук из массива
+            int randomIndex = Random.Range(0, stepSounds.Length);
+            audioSource.PlayOneShot(stepSounds[randomIndex]);
         }
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class PanelFader : MonoBehaviour
 {
@@ -18,6 +19,8 @@ public class PanelFader : MonoBehaviour
     public GameObject playerHurt;
     public GameObject cursor;
     public GameObject blood;
+
+    public Volume globalVolume; // Ссылка на Global Volume для включения Feedback
 
     private void Awake()
     {
@@ -60,14 +63,15 @@ public class PanelFader : MonoBehaviour
         blackPanel.interactable = false;
         blackPanel.blocksRaycasts = false;
 
-        // FadeOut белой панели с запуском аудио за 1 секунду до завершения
-        yield return StartCoroutine(FadeCanvasGroupWithAudio(whitePanel, 1f, 0f, fadeDuration));
+        // FadeOut белой панели с запуском аудио и включением Feedback
+        yield return StartCoroutine(FadeCanvasGroupWithAudioAndFeedback(whitePanel, 1f, 0f, fadeDuration));
     }
 
-    private IEnumerator FadeCanvasGroupWithAudio(CanvasGroup canvasGroup, float startAlpha, float endAlpha, float duration)
+    private IEnumerator FadeCanvasGroupWithAudioAndFeedback(CanvasGroup canvasGroup, float startAlpha, float endAlpha, float duration)
     {
         float elapsedTime = 0f;
         bool audioStarted = false; // Флаг для запуска аудио
+        bool feedbackEnabled = false; // Флаг для включения Feedback
 
         canvasGroup.alpha = startAlpha;
 
@@ -95,6 +99,19 @@ public class PanelFader : MonoBehaviour
                 {
                     shumAudioSource.clip = shumClip;
                     shumAudioSource.Play();
+                }
+            }
+
+            // Включение Feedback через Global Volume
+            if (!feedbackEnabled && globalVolume != null && globalVolume.profile != null)
+            {
+                if (globalVolume.profile.TryGet<VHSPro>(out VHSPro vhsPro))
+                {
+                    if (vhsPro.feedbackOn != null)
+                    {
+                        vhsPro.feedbackOn.value = true;
+                        feedbackEnabled = true; // Устанавливаем флаг, чтобы включить Feedback только один раз
+                    }
                 }
             }
 

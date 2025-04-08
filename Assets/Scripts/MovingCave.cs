@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour
 
     private bool isFadingOut = false;
     public float blinkSpeed = 1f;
-
+    private bool hasReachedEnd = false;
     void Start()
     {
         Cursor.visible = false;
@@ -64,9 +64,8 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.W) && !isMoving)
+        if (Input.GetKeyDown(KeyCode.W) && !isMoving && !hasReachedEnd)
         {
-
             if (currentPositionIndex < cameraPositions.Length - 1)
             {
                 currentPositionIndex++;
@@ -76,6 +75,7 @@ public class GameManager : MonoBehaviour
             if (currentPositionIndex == cameraPositions.Length - 1)
             {
                 OnPlayerReachedEnd();
+                hasReachedEnd = true; // Устанавливаем флаг, чтобы больше не реагировать на нажатия
             }
 
             if (currentPositionIndex == 6)
@@ -84,6 +84,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        // Логика для мигания текста
         if (hintText != null)
         {
             Color currentColor = hintText.color;
